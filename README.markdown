@@ -1,3 +1,9 @@
+## What is new in this fork? ##
+
+* Update install guide to work with Dalli
+* Fix an exception in original version
+* Tested with RoR 2.3.8, ActiveScaffold 2.3, Dalli 0.9.7
+
 ## What is Cache Money ##
 
 Cache Money is a write-through and read-through caching library for ActiveRecord.
@@ -149,33 +155,32 @@ Sometimes your code will request the same cache key twice in one request. You ca
 
 Place a YAML file in `config/memcached.yml` with contents like:
 
-    test:
-      ttl: 604800
-      namespace: ...
-      sessions: false
-      debug: false
-      servers: localhost:11211
+  test:
+    servers: localhost:11211
 
-    development: 
-       ....
-       
+  development:
+    servers: localhost:11211
+
+  production:
+    servers: localhost:11211
+
 #### Step 3: `config/initializers/cache_money.rb` ####
 
 Place this in `config/initializers/cache_money.rb`
 
-    require 'cache_money'
-    
-    config = YAML.load(IO.read(File.join(RAILS_ROOT, "config", "memcached.yml")))[RAILS_ENV]
-    $memcache = MemCache.new(config)
-    $memcache.servers = config['servers']
+  require 'cache_money'
+  require 'dalli'
 
-    $local = Cash::Local.new($memcache)
-    $lock = Cash::Lock.new($memcache)
-    $cache = Cash::Transactional.new($local, $lock)
+  config = YAML.load(IO.read(File.join(RAILS_ROOT, "config", "memcached.yml")))[RAILS_ENV]
+  $memcache = Dalli::Client.new(config[:servers])
 
-    class ActiveRecord::Base
-      is_cached :repository => $cache
-    end
+  $local = Cash::Local.new($memcache)
+  $lock = Cash::Lock.new($memcache)
+  $cache = Cash::Transactional.new($local, $lock)
+
+  class ActiveRecord::Base
+    is_cached :repository => $cache
+  end
 
 #### Step 2: Add indices to your ActiveRecord models ####
 
