@@ -147,9 +147,8 @@ Sometimes your code will request the same cache key twice in one request. You ca
 #### Step 0: Install MemCached
 
 #### Step 1: Get the GEM ####
-
-    % gem sources -a http://gems.github.com
-    % sudo gem install nkallen-cache-money
+    
+    % sudo gem install shanboli-cache-money
     
 #### Step 2: Configure MemCached.
 
